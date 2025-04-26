@@ -10,7 +10,7 @@ import SwiftUI
 struct HotChocolateGuideView: View {
     var body: some View {
         ZStack {
-            // Background Gradient - slightly warmer variation
+            // Background Gradient - reverted to slightly warmer variation
             LinearGradient(
                 gradient: Gradient(colors: [Color.orange.opacity(0.1), Color.brown.opacity(0.15)]),
                 startPoint: .topLeading,

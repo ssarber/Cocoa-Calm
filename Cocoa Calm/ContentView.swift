@@ -36,7 +36,7 @@ struct SOSView: View {
           showingBreatheView = true // Signal HomeView to show BreatheView
           dismiss() // Close the SOS sheet
         } label: {
-          Label("Breathe (1 min Guided)", systemImage: "wind")
+          Label("Breathe (3 inhales, 3 exhales)", systemImage: "wind")
             .frame(maxWidth: .infinity)
         }
         .buttonStyle(.borderedProminent)
@@ -107,7 +107,7 @@ struct HomeView: View {
     // Ensure HomeView is wrapped in NavigationView for NavigationLinks to work
     NavigationView {
       ZStack {
-        // Background Gradient
+        // Reverted Background Gradient
         LinearGradient(
           gradient: Gradient(colors: [Color.blue.opacity(0.1), Color.purple.opacity(0.2)]),
           startPoint: .topLeading,
@@ -143,7 +143,7 @@ struct HomeView: View {
                 .padding(.vertical, 15)
                 .frame(maxWidth: .infinity) // Make button wide
                 .foregroundColor(.white)
-                // Use a calmer color as discussed
+                // Reverted background color
                 .background(Color.teal.opacity(0.8)) // Calm Teal
                 .cornerRadius(12)
                 .shadow(radius: 5)
@@ -158,10 +158,25 @@ struct HomeView: View {
                 .fontWeight(.semibold)
               
               HStack(spacing: 15) {
-                QuickActionButton(title: "Meditate", icon: "figure.mind.and.body") {
-                  // TODO: Navigate to Meditation List View
-                  print("Navigate to Meditate")
+                // --- Changed QuickActionButton to NavigationLink ---
+                NavigationLink { // Destination View
+                    MeditateView()
+                } label: { // Button Appearance
+                    VStack {
+                      Image(systemName: "figure.mind.and.body")
+                        .font(.title2)
+                        .foregroundColor(.primary.opacity(0.8))
+                      Text("Meditate")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    }
+                    .padding()
+                    .frame(maxWidth: .infinity) // Distribute space if in HStack
+                    .background(.regularMaterial) // Subtle background like control center
+                    .cornerRadius(10)
                 }
+                .buttonStyle(.plain) // Treat label as button face
+                // --- End Change ---
                 
                 // *** USE NavigationLink directly for main button ***
                 NavigationLink {
@@ -182,6 +197,27 @@ struct HomeView: View {
                   .cornerRadius(10)
                 }
                 .buttonStyle(.plain) // Treat label as button face
+                
+                // --- New Button: Hot Chocolate Audio Guide ---
+                NavigationLink {
+                    HotChocolateGuideAudioView() // Destination
+                } label: {
+                    // Label: The visual content of the button
+                    VStack {
+                        Image(systemName: "headphones.circle.fill") // Different icon
+                            .font(.title2)
+                            .foregroundColor(.primary.opacity(0.8))
+                        Text("HC Audio") // Shorter text
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    .padding()
+                    .frame(maxWidth: .infinity) // Distribute space if in HStack
+                    .background(.regularMaterial) // Subtle background like control center
+                    .cornerRadius(10)
+                }
+                .buttonStyle(.plain) // Treat label as button face
+                // --- End New Button ---
                 
               } // End HStack
               
