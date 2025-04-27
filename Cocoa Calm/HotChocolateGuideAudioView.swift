@@ -7,9 +7,8 @@ import Combine
 struct HotChocolateGuideAudioView: View {
     
     // --- Configuration ---
-//    private let audioFileName = "hot_chocolate_guide" // Add this file (e.g., hot_chocolate_guide.mp3)
+    private let audioFileName = "hot_chocolate_guide" // Add this file (e.g., hot_chocolate_guide.mp3)
   
-    private let audioFileName = "instruction_0" //
     private let audioFileExtension = "mp3" // Or wav, etc.
     // ---------------------
 
@@ -21,41 +20,70 @@ struct HotChocolateGuideAudioView: View {
     @State private var timerSubscription: Cancellable? = nil
     @State private var errorMessage: String? = nil
     
-    // Removed State for Animation Bars
-    // @State private var barScales: [CGFloat] = [0.3, 0.3, 0.3, 0.3, 0.3]
-    // private let animationDuration = 0.4
+    // State for Swirl Animation
+    @State private var rotationAngle1: Angle = .zero
+    @State private var rotationAngle2: Angle = .zero
+    @State private var rotationAngle3: Angle = .zero
 
     // MARK: - Body
     var body: some View {
         ZStack {
-            // Background (Consistent theme)
+            // --- Swirling Background Animation --- 
+            ZStack {
+                 Circle() // Largest, darkest base
+                    .fill(Color(red: 0.3, green: 0.15, blue: 0.05).opacity(0.8))
+                    .frame(width: 600, height: 600)
+                    .offset(x: -100, y: -100)
+                    .rotationEffect(rotationAngle1)
+
+                 Circle() // Medium, slightly lighter
+                    .fill(Color.brown.opacity(0.6))
+                    .frame(width: 500, height: 500)
+                    .offset(x: 100, y: 50)
+                    .rotationEffect(rotationAngle2)
+
+                 Circle() // Smaller, highlight tone
+                     .fill(Color(red: 0.6, green: 0.4, blue: 0.2).opacity(0.5))
+                     .frame(width: 400, height: 400)
+                     .offset(x: -50, y: 100)
+                     .rotationEffect(rotationAngle3)
+            }
+            .blur(radius: 60) // Blend the shapes smoothly
+            .ignoresSafeArea() // Extend to screen edges
+            // --- End Swirling Background --- 
+            
+            // Removed Static Gradient Background
+            /*
             LinearGradient(
                 gradient: Gradient(colors: [Color.brown.opacity(0.2), Color(red: 0.5, green: 0.35, blue: 0.25).opacity(0.3)]),
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
             .ignoresSafeArea()
+            */
 
+            // --- Foreground Content ---
             VStack(spacing: 30) {
                 Spacer()
                 
                 Image(systemName: "cup.and.saucer.fill")
                     .font(.system(size: 80))
-                    .foregroundColor(.brown.opacity(0.8))
+                    .foregroundColor(.white.opacity(0.9)) // Change color for contrast
+                    .shadow(radius: 5) // Add shadow for visibility
                     .padding(.bottom, 20)
 
                 Text("Mindful Hot Chocolate Audio")
                     .font(.title)
                     .fontWeight(.semibold)
-                    
-                // --- Removed Animation Bars --- 
-                // HStack(spacing: 4) { ... }
-                // --- End Removed Animation Bars ---
+                    .foregroundColor(.white) // Change color for contrast
+                    .shadow(radius: 3)
 
                 if let errorMessage = errorMessage {
                      Text(errorMessage)
                          .foregroundColor(.red)
                          .padding()
+                         .background(.ultraThinMaterial)
+                         .cornerRadius(10)
                  }
 
                 // Player Controls
@@ -67,12 +95,14 @@ struct HotChocolateGuideAudioView: View {
                         Text(formatTime(totalDuration))
                     }
                     .font(.caption.monospaced())
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.white.opacity(0.8)) // Change color
 
-                    // Progress Bar (Simple version)
+                    // Progress Bar (REMOVED)
+                    /*
                     ProgressView(value: currentTime, total: totalDuration)
                         .progressViewStyle(.linear)
-                        .tint(.brown)
+                        .tint(.white.opacity(0.7)) // Change tint
+                    */
 
                     // Play/Pause Button
                     Button {
@@ -82,29 +112,60 @@ struct HotChocolateGuideAudioView: View {
                             .resizable()
                             .aspectRatio(contentMode: .fit)
                             .frame(height: 60)
-                            .foregroundColor(.brown.opacity(0.9))
+                            .foregroundColor(.white.opacity(0.9))
+                            .shadow(radius: 3)
                     }
-                    .disabled(errorMessage != nil) // Disable if audio failed to load
+                    .disabled(errorMessage != nil)
                 }
                 .padding(.horizontal, 40)
+                // Add a background material for better readability of controls (REMOVED)
+                .padding(.vertical, 20)
+                // .background(.black.opacity(0.15))
+                // .cornerRadius(15)
 
                 Spacer()
                 Spacer()
             }
             .padding()
+            // --- End Foreground Content ---
         }
         .navigationTitle("Audio Guide")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear(perform: setupAudioPlayer)
         .onDisappear(perform: stopAndCleanup)
-        // --- Removed onChange modifier --- 
-        // .onChange(of: isPlaying) { ... }
-        // --- End Removed onChange ---
+        .onChange(of: isPlaying) { playing in
+            if playing {
+                startSwirlAnimation()
+            } else {
+                stopSwirlAnimation()
+            }
+        }
     }
 
-    // MARK: - Animation Functions (Removed)
-    // func startBarAnimation() { ... }
-    // func resetBarAnimation() { ... }
+    // MARK: - Animation Functions
+    func startSwirlAnimation() {
+         withAnimation(.linear(duration: 25).repeatForever(autoreverses: false)) {
+             rotationAngle1 = .degrees(360)
+         }
+         withAnimation(.linear(duration: 35).repeatForever(autoreverses: false)) {
+             rotationAngle2 = .degrees(-360) // Rotate opposite direction
+         }
+        withAnimation(.linear(duration: 45).repeatForever(autoreverses: false)) {
+             rotationAngle3 = .degrees(360)
+         }
+    }
+
+    func stopSwirlAnimation() {
+         // Stop the repeating animation by applying a non-repeating one
+         // Setting the angle back to zero (or current value) without repeat stops it.
+          withAnimation(.easeInOut(duration: 0.5)) {
+              // Keep the current angle visually, but the repeatForever is removed
+              // Or reset to zero for a cleaner stop:
+              rotationAngle1 = .zero
+              rotationAngle2 = .zero
+              rotationAngle3 = .zero
+          }
+    }
 
     // MARK: - Audio Functions
     func setupAudioPlayer() {
@@ -115,14 +176,12 @@ struct HotChocolateGuideAudioView: View {
         }
 
         do {
-            // Configure audio session for playback
             try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
             try AVAudioSession.sharedInstance().setActive(true)
-            
             audioPlayer = try AVAudioPlayer(contentsOf: url)
             audioPlayer?.prepareToPlay()
             totalDuration = audioPlayer?.duration ?? 0.0
-            errorMessage = nil // Clear error if successful
+            errorMessage = nil
         } catch {
             print("Error initializing audio player: \(error)")
             errorMessage = "Failed to load audio."
@@ -131,7 +190,6 @@ struct HotChocolateGuideAudioView: View {
 
     func togglePlayback() {
         guard let player = audioPlayer else { return }
-        
         if isPlaying {
             player.pause()
             stopTimer()
@@ -146,20 +204,14 @@ struct HotChocolateGuideAudioView: View {
         audioPlayer?.stop()
         isPlaying = false
         stopTimer()
-        // Deactivate audio session (optional, depends on app structure)
-        // try? AVAudioSession.sharedInstance().setActive(false)
     }
     
     // MARK: - Timer Functions
     func startTimer() {
-        // Invalidate existing timer if any
         stopTimer()
-        // Create a new timer that fires frequently to update currentTime
         timerSubscription = Timer.publish(every: 0.1, on: .main, in: .common)
             .autoconnect()
-            .sink { _ in
-                updateProgress()
-            }
+            .sink { _ in updateProgress() }
     }
 
     func stopTimer() {
@@ -168,17 +220,15 @@ struct HotChocolateGuideAudioView: View {
     }
 
     func updateProgress() {
-        guard let player = audioPlayer, isPlaying else { return }
+        guard let player = audioPlayer, player.isPlaying else { 
+             if isPlaying { 
+                 isPlaying = false
+                 stopTimer()
+                 currentTime = 0
+             }
+             return 
+         }
         currentTime = player.currentTime
-        
-        // Check if playback finished
-        if currentTime >= totalDuration {
-            player.stop() // Ensure it stops
-            player.currentTime = 0 // Reset to beginning
-            isPlaying = false
-            currentTime = 0 // Reset timer display
-            stopTimer()
-        }
     }
 
     // MARK: - Helper
