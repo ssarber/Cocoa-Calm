@@ -36,7 +36,7 @@ struct HotChocolateGuideAudioView: View {
                     .offset(x: -100, y: -100)
                     .rotationEffect(rotationAngle1)
 
-                 Circle() // Medium, slightly lighter
+                 Circle() // Medium, slightly lighter#imageLiteral(resourceName: "Murzya1.jpg")
                     .fill(Color.brown.opacity(0.6))
                     .frame(width: 500, height: 500)
                     .offset(x: 100, y: 50)
@@ -128,7 +128,12 @@ struct HotChocolateGuideAudioView: View {
             }
             .padding()
             // --- End Foreground Content ---
+
+            // --- Removed Close Button Overlay --- 
+            // VStack { ... }
+            // --- End Removed Close Button Overlay ---
         }
+        // Re-added Navigation Title Modifiers
         .navigationTitle("Audio Guide")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear(perform: setupAudioPlayer)
@@ -240,6 +245,7 @@ struct HotChocolateGuideAudioView: View {
 }
 
 #Preview {
+    // Previewing wrapped in NavigationView again
     NavigationView {
         HotChocolateGuideAudioView()
     }

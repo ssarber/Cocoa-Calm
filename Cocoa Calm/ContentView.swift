@@ -198,11 +198,10 @@ struct HomeView: View {
                 }
                 .buttonStyle(.plain) // Treat label as button face
                 
-                // --- New Button: Hot Chocolate Audio Guide ---
-                NavigationLink {
-                    HotChocolateGuideAudioView() // Destination
-                } label: {
-                    // Label: The visual content of the button
+                // --- Reverted to NavigationLink: Hot Chocolate Audio Guide ---
+                NavigationLink { // Destination
+                    HotChocolateGuideAudioView()
+                } label: { // Button Appearance
                     VStack {
                         Image(systemName: "headphones.circle.fill") // Different icon
                             .font(.title2)
@@ -217,7 +216,7 @@ struct HomeView: View {
                     .cornerRadius(10)
                 }
                 .buttonStyle(.plain) // Treat label as button face
-                // --- End New Button ---
+                // --- End Reverted Link ---
                 
               } // End HStack
               
