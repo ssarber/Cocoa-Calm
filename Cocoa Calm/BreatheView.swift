@@ -80,9 +80,8 @@ struct BreatheView: View {
                 .padding()
             }
             .navigationTitle("Quick Reset") // More fitting title
-            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
+                ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         stopSounds() // Stop sounds if × is tapped
                         isAnimating = false // Stop animation if × is tapped

@@ -89,6 +89,8 @@ struct OnboardingStepContent {
     let description: String
 }
 
-#Preview {
-    OnboardingView(hasCompletedOnboarding: .constant(false))
+struct OnboardingView_Previews: PreviewProvider {
+    static var previews: some View {
+        OnboardingView(hasCompletedOnboarding: .constant(false))
+    }
 }

@@ -106,9 +106,8 @@ struct HotChocolateGuideView: View {
         // Setting the navigation bar title - this assumes the parent view (HomeView's NavLink)
         // doesn't override it forcefully. Adjust as needed.
         .navigationTitle("Hot Chocolate Ritual")
-        .navigationBarTitleDisplayMode(.inline) // Keeps title neat
         .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
+            ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     dismiss() // Dismiss the modal
                 } label: {
@@ -151,7 +150,9 @@ struct RecipeStepView: View {
 
 
 // Preview Provider
-#Preview {
-    // Preview as a modal sheet
-    HotChocolateGuideView()
+struct HotChocolateGuideView_Previews: PreviewProvider {
+    static var previews: some View {
+        // Preview as a modal sheet
+        HotChocolateGuideView()
+    }
 }

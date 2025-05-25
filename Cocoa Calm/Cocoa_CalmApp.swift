@@ -8,12 +8,11 @@
 import SwiftUI
 import SwiftData
 
-@main
 struct Cocoa_CalmApp: App {
-    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding: Bool = false // Tracks onboarding status
+    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding: Bool = false
+    @StateObject private var subscriptionManager = SubscriptionManager()
 
     var sharedModelContainer: ModelContainer = {
-        // ... (your existing model container setup)
         let schema = Schema([
             Item.self,
         ])
@@ -22,7 +21,7 @@ struct Cocoa_CalmApp: App {
         do {
             return try ModelContainer(for: schema, configurations: [modelConfiguration])
         } catch {
-            fatalError("Could not create ModelContainer: \\(error)")
+            fatalError("Could not create ModelContainer: \(error)")
         }
     }()
 
@@ -30,10 +29,19 @@ struct Cocoa_CalmApp: App {
         WindowGroup {
             if hasCompletedOnboarding {
                 HomeView()
+                    .environmentObject(subscriptionManager)
             } else {
-                OnboardingView(hasCompletedOnboarding: $hasCompletedOnboarding) // Show onboarding if not completed
+                OnboardingView(hasCompletedOnboarding: $hasCompletedOnboarding)
+                    .environmentObject(subscriptionManager)
             }
         }
         .modelContainer(sharedModelContainer)
+    }
+}
+
+@main
+struct CocoaCalmMain {
+    static func main() {
+        Cocoa_CalmApp.main()
     }
 }

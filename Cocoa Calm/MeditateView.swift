@@ -2,7 +2,7 @@
 
 import SwiftUI
 import Combine // Needed for Timer
-import AVFoundation // Keep for AVAudioPlayer
+import AVFoundation
 
 struct MeditateView: View {
     @Environment(\.dismiss) var dismiss // For modal dismissal
@@ -114,9 +114,11 @@ struct MeditateView: View {
                 .padding()
             }
             .navigationTitle("Mindful Listening")
+            #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
+            #endif
             .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
+                ToolbarItem(placement: .primaryAction) {
                     Button {
                         stopMeditation() // Stop meditation if running
                         dismiss() // Dismiss the modal
@@ -230,7 +232,8 @@ struct MeditateView: View {
     }
 }
 
-#Preview {
-    // Preview as a modal sheet
-    MeditateView()
+struct MeditateView_Previews: PreviewProvider {
+    static var previews: some View {
+        MeditateView()
+    }
 } 

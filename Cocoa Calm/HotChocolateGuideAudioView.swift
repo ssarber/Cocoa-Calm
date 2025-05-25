@@ -2,83 +2,9 @@ import SwiftUI
 import AVFoundation
 import Combine
 
-// Placeholder for your actual subscription management
-class SubscriptionManager: ObservableObject {
-    @Published var isSubscribed: Bool = false // Default to not subscribed
-
-    // In a real app, this would involve StoreKit and server validation
-    func startFreeTrial() {
-        // Simulate starting a trial
-        self.isSubscribed = true
-        print("Free trial started. User is now subscribed.")
-    }
-
-    func checkSubscriptionStatus() {
-        // In a real app, load status from UserDefaults, Keychain, or server
-        // For this example, it just remains its current state unless startFreeTrial is called
-        print("Checked subscription status: \(isSubscribed)")
-    }
-}
-
-struct PaywallView: View {
-    @ObservedObject var subscriptionManager: SubscriptionManager
-    @Environment(\.dismiss) var dismiss
-
-    var body: some View {
-        VStack(spacing: 25) {
-            Spacer()
-            Text("Unlock Full Access")
-                .font(.largeTitle)
-                .fontWeight(.bold)
-                .padding(.top)
-
-            Image(systemName: "sparkles")
-                .font(.system(size: 50))
-                .foregroundColor(.blue)
-                .padding()
-
-            Text("Start your free trial to listen to the Mindful Hot Chocolate audio guide and access all premium features.")
-                .font(.body)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 30)
-
-            Button {
-                subscriptionManager.startFreeTrial()
-                // In a real app, you'd handle StoreKit purchase flow here.
-                // If successful, then update subscriptionManager.isSubscribed
-                // and then dismiss.
-                dismiss()
-            } label: {
-                Text("Start Free Trial")
-                    .font(.headline)
-                    .foregroundColor(.white)
-                    .padding()
-                    .frame(maxWidth: .infinity)
-                    .background(Color.blue)
-                    .cornerRadius(10)
-                    .shadow(radius: 3)
-            }
-            .padding(.horizontal, 40)
-
-            Button {
-                dismiss()
-            } label: {
-                Text("Not Now")
-                    .font(.subheadline)
-                    .foregroundColor(.gray)
-            }
-            .padding(.bottom)
-            Spacer()
-        }
-        .padding()
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.black.opacity(0.5))
-        .ignoresSafeArea()
-    }
-}
-
 struct HotChocolateGuideAudioView: View {
-    @Environment(\.dismiss) var dismiss // For modal dismissal
+    @Environment(\.dismiss) var dismiss
+    @EnvironmentObject var subscriptionManager: SubscriptionManager
     
     // --- Configuration ---
     private let audioFileName = "hot_chocolate_guide"
@@ -98,28 +24,26 @@ struct HotChocolateGuideAudioView: View {
     @State private var rotationAngle2: Angle = .zero
     @State private var rotationAngle3: Angle = .zero
 
-    // Paywall and subscription state
-    @StateObject private var subscriptionManager = SubscriptionManager()
+    // Paywall state
     @State private var showPaywallSheet: Bool = false
 
     // MARK: - Body
     var body: some View {
         Group {
-            if subscriptionManager.isSubscribed {
+            if subscriptionManager.canAccessPremiumContent() {
                 audioPlayerContentView
             } else {
                 lockedScreenView
             }
         }
         .onAppear {
-            setupAudioPlayer() // Prepare audio resources
-            subscriptionManager.checkSubscriptionStatus() // Check current status
-            if !subscriptionManager.isSubscribed {
-                showPaywallSheet = true // Present paywall if not subscribed
+            setupAudioPlayer()
+            if !subscriptionManager.canAccessPremiumContent() {
+                showPaywallSheet = true
             }
         }
         .sheet(isPresented: $showPaywallSheet) {
-            PaywallView(subscriptionManager: subscriptionManager)
+            PremiumPaywallView(contentTitle: "Mindful Hot Chocolate Audio")
         }
     }
 
@@ -182,9 +106,8 @@ struct HotChocolateGuideAudioView: View {
                 .padding()
             }
             .navigationTitle("Audio Guide")
-            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
+                ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         stopAndCleanup() // Stop audio if playing
                         dismiss() // Dismiss the modal
@@ -195,7 +118,7 @@ struct HotChocolateGuideAudioView: View {
                 }
             }
             .onDisappear(perform: stopAndCleanup)
-            .onChange(of: isPlaying) { newValue in // Updated onChange syntax
+            .onChange(of: isPlaying) { oldValue, newValue in
                 if newValue {
                     startSwirlAnimation()
                 } else {
@@ -243,9 +166,8 @@ struct HotChocolateGuideAudioView: View {
             .background(Color.black.opacity(0.5))
             .ignoresSafeArea()
             .navigationTitle("Content Locked")
-            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
+                ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         dismiss() // Dismiss the modal
                     } label: {
@@ -395,6 +317,9 @@ struct HotChocolateGuideAudioView: View {
     }
 }
 
-#Preview {
-    HotChocolateGuideAudioView()
+struct HotChocolateGuideAudioView_Previews: PreviewProvider {
+    static var previews: some View {
+        HotChocolateGuideAudioView()
+            .environmentObject(SubscriptionManager())
+    }
 }
