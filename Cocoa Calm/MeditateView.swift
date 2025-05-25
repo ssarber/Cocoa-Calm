@@ -5,6 +5,7 @@ import Combine // Needed for Timer
 import AVFoundation // Keep for AVAudioPlayer
 
 struct MeditateView: View {
+    @Environment(\.dismiss) var dismiss // For modal dismissal
 
     // --- Configuration for Local Audio Files ---
     // Assumes files named instruction_0.mp3, instruction_1.mp3, etc. are in the bundle.
@@ -54,68 +55,78 @@ struct MeditateView: View {
 
     // MARK: - Body
     var body: some View {
-        ZStack {
-            // Background (Consistent theme)
-            LinearGradient(
-              gradient: Gradient(colors: [Color.blue.opacity(0.1), Color.purple.opacity(0.2)]),
-              startPoint: .topLeading,
-              endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
+        NavigationView { // Wrap in NavigationView for toolbar
+            ZStack {
+                // Background (Consistent theme)
+                LinearGradient(
+                  gradient: Gradient(colors: [Color.blue.opacity(0.1), Color.purple.opacity(0.2)]),
+                  startPoint: .topLeading,
+                  endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
 
-            VStack(spacing: 40) {
-                Spacer()
+                VStack(spacing: 40) {
+                    Spacer()
 
-                // Instruction Text Area
-                Text(currentInstruction)
-                    .font(.title2)
-                    .fontWeight(.medium)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 30)
-                    .frame(minHeight: 100, alignment: .center) // Ensure space and center alignment
-                    .id("instruction_\(currentPhaseIndex)") // Help SwiftUI notice changes
-                    .transition(.opacity.animation(.easeInOut(duration: 0.5)))
+                    // Instruction Text Area
+                    Text(currentInstruction)
+                        .font(.title2)
+                        .fontWeight(.medium)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 30)
+                        .frame(minHeight: 100, alignment: .center) // Ensure space and center alignment
+                        .id("instruction_\(currentPhaseIndex)") // Help SwiftUI notice changes
+                        .transition(.opacity.animation(.easeInOut(duration: 0.5)))
 
-                // Timer Display
-                Text(formattedTime)
-                    .font(.system(size: 48, weight: .light, design: .monospaced))
-                    .padding(.bottom, 30)
+                    // Timer Display
+                    Text(formattedTime)
+                        .font(.system(size: 48, weight: .light, design: .monospaced))
+                        .padding(.bottom, 30)
 
-                // Control Button
-                Button {
-                    if isMeditating {
-                        stopMeditation()
-                    } else {
-                        startMeditation()
+                    // Control Button
+                    Button {
+                        if isMeditating {
+                            stopMeditation()
+                        } else {
+                            startMeditation()
+                        }
+                    } label: {
+                        Text(isMeditating ? "Stop" : "Start Meditation")
+                            .font(.headline)
+                            .padding(.vertical, 15)
+                            .frame(maxWidth: .infinity)
+                            .foregroundColor(.white)
+                            .background(isMeditating ? Color.mint.opacity(0.8) : Color.blue.opacity(0.7))
+                            .cornerRadius(12)
+                            .shadow(radius: 5)
+                            .overlay( // Show subtle indicator while playing audio
+                               isSpeaking ? Image(systemName: "speaker.wave.2.fill").foregroundColor(.white).padding(.trailing) : nil,
+                               alignment: .trailing
+                            )
                     }
-                } label: {
-                    Text(isMeditating ? "Stop" : "Start Meditation")
-                        .font(.headline)
-                        .padding(.vertical, 15)
-                        .frame(maxWidth: .infinity)
-                        .foregroundColor(.white)
-                        .background(isMeditating ? Color.red.opacity(0.8) : Color.blue.opacity(0.7))
-                        .cornerRadius(12)
-                        .shadow(radius: 5)
-                        .overlay( // Show subtle indicator while playing audio
-                           isSpeaking ? Image(systemName: "speaker.wave.2.fill").foregroundColor(.white).padding(.trailing) : nil,
-                           alignment: .trailing
-                        )
+                    .padding(.horizontal)
+                    .disabled(isSpeaking && !isMeditating) // Disable start if still speaking
+
+                    // TODO: Optional - Add a Picker for duration selection here
+
+                    Spacer()
                 }
-                .padding(.horizontal)
-                .disabled(isSpeaking && !isMeditating) // Disable start if still speaking
-
-                // TODO: Optional - Add a Picker for duration selection here
-
-                Spacer()
+                .padding()
             }
-            .padding()
-        }
-        .navigationTitle("Mindful Listening")
-        .navigationBarTitleDisplayMode(.inline)
-        .onDisappear {
-            // Ensure timer stops if the view is dismissed
-            stopMeditation()
+            .navigationTitle("Mindful Listening")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") {
+                        stopMeditation() // Stop meditation if running
+                        dismiss() // Dismiss the modal
+                    }
+                }
+            }
+            .onDisappear {
+                // Ensure timer stops if the view is dismissed
+                stopMeditation()
+            }
         }
     }
 
@@ -217,8 +228,6 @@ struct MeditateView: View {
 }
 
 #Preview {
-    // Wrap in NavigationView for previewing title bar
-    NavigationView {
-         MeditateView()
-    }
+    // Preview as a modal sheet
+    MeditateView()
 } 

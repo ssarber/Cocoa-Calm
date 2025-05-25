@@ -8,8 +8,11 @@
 import SwiftUI
 
 struct HotChocolateGuideView: View {
+    @Environment(\.dismiss) var dismiss // For modal dismissal
+    
     var body: some View {
-        ZStack {
+        NavigationView { // Wrap in NavigationView for toolbar
+            ZStack {
             // Background Gradient - reverted to slightly warmer variation
             LinearGradient(
                 gradient: Gradient(colors: [Color.orange.opacity(0.1), Color.brown.opacity(0.15)]),
@@ -104,6 +107,14 @@ struct HotChocolateGuideView: View {
         // doesn't override it forcefully. Adjust as needed.
         .navigationTitle("Hot Chocolate Ritual")
         .navigationBarTitleDisplayMode(.inline) // Keeps title neat
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button("Done") {
+                    dismiss() // Dismiss the modal
+                }
+            }
+        }
+        }
     }
 }
 
@@ -138,8 +149,6 @@ struct RecipeStepView: View {
 
 // Preview Provider
 #Preview {
-    // Wrap in NavigationView to see the title bar correctly during preview
-    NavigationView {
-        HotChocolateGuideView()
-    }
+    // Preview as a modal sheet
+    HotChocolateGuideView()
 }

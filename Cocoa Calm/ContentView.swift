@@ -1,24 +1,15 @@
 // MARK: - HomeView.swift
-// Includes SOSView, NavigationTarget, QuickActionButton
+// Includes SOSView, QuickActionButton
 
 import SwiftUI
-
-// Define possible navigation destinations originating from the SOS sheet
-enum NavigationTarget: Identifiable {
-  case hotChocolate
-  // Add other cases if needed, e.g., .quickMeditation
-  
-  var id: NavigationTarget { self } // Make identifiable for NavigationLink tag/selection
-}
 
 // Placeholder for the SOS quick actions view that will pop up
 struct SOSView: View {
   @Environment(\.dismiss) var dismiss // To close the sheet
   
-  // Receive the binding from HomeView
-  @Binding var navigationTarget: NavigationTarget?
-  // Add binding for showing BreatheView
+  // Add binding for showing BreatheView and HotChocolateGuideView
   @Binding var showingBreatheView: Bool
+  @Binding var showingHotChocolateGuideView: Bool
   
   var body: some View {
     NavigationView { // Gives us a title bar and potentially a done button
@@ -55,7 +46,7 @@ struct SOSView: View {
         
         Button {
           // SET STATE & DISMISS
-          navigationTarget = .hotChocolate // Set the state in HomeView
+          showingHotChocolateGuideView = true // Set the state in HomeView
           dismiss() // Close the sheet
         } label: {
           Label("Mindful Sip Prep", systemImage: "cup.and.saucer")
@@ -89,9 +80,10 @@ struct HomeView: View {
   // State for the daily quote (could be fetched or randomized)
   @State private var dailyQuote = "Take a deep breath, you've got this."
   
-  // Holds the destination to navigate to AFTER the sheet dismisses.
-  // Use optional NavigationTarget? to control the NavigationLink's active state
-  @State private var navigationTarget: NavigationTarget? = nil
+  // State variables to control modal presentations
+  @State private var showingMeditateView = false
+  @State private var showingHotChocolateGuideView = false
+  @State private var showingHotChocolateAudioView = false
   
   // Example quotes - you could load these from elsewhere
   let quotes = [
@@ -104,7 +96,7 @@ struct HomeView: View {
   ]
   
   var body: some View {
-    // Ensure HomeView is wrapped in NavigationView for NavigationLinks to work
+    // Ensure HomeView is wrapped in NavigationView for navigation styling
     NavigationView {
       ZStack {
         // Reverted Background Gradient
@@ -117,17 +109,6 @@ struct HomeView: View {
         
         ScrollView { // Allows content to scroll if it exceeds screen height
           VStack(alignment: .leading, spacing: 30) {
-            
-            // ---- ADD HIDDEN NAVIGATION LINK ----
-            // This link is activated programmatically by changing `navigationTarget`
-            NavigationLink(
-              destination: destinationView(for: navigationTarget), // Destination view
-              tag: navigationTarget ?? .hotChocolate, // Use optional tag matching
-              selection: $navigationTarget // Bind to the state variable
-            ) {
-              EmptyView() // Hidden label
-            }
-            // ---- END HIDDEN LINK ----
             
             // 1. Greeting
             Text("Welcome")
@@ -158,10 +139,10 @@ struct HomeView: View {
                 .fontWeight(.semibold)
               
               HStack(spacing: 15) {
-                // --- Changed QuickActionButton to NavigationLink ---
-                NavigationLink { // Destination View
-                    MeditateView()
-                } label: { // Button Appearance
+                // --- Changed to button with modal presentation ---
+                Button {
+                    showingMeditateView = true
+                } label: {
                     VStack {
                       Image(systemName: "figure.mind.and.body")
                         .font(.title2)
@@ -175,12 +156,10 @@ struct HomeView: View {
                     .background(.regularMaterial) // Subtle background like control center
                     .cornerRadius(10)
                 }
-                .buttonStyle(.plain) // Treat label as button face
-                // --- End Change ---
                 
-                // *** USE NavigationLink directly for main button ***
-                NavigationLink {
-                  HotChocolateGuideView() // Destination
+                // *** Changed to button with modal presentation ***
+                Button {
+                  showingHotChocolateGuideView = true
                 } label: {
                   // Label: The visual content of the button
                   VStack {
@@ -196,12 +175,11 @@ struct HomeView: View {
                   .background(.regularMaterial) // Subtle background like control center
                   .cornerRadius(10)
                 }
-                .buttonStyle(.plain) // Treat label as button face
                 
-                // --- Reverted to NavigationLink: Hot Chocolate Audio Guide ---
-                NavigationLink { // Destination
-                    HotChocolateGuideAudioView()
-                } label: { // Button Appearance
+                // --- Changed to button with modal presentation ---
+                Button {
+                    showingHotChocolateAudioView = true
+                } label: {
                     VStack {
                         Image(systemName: "headphones.circle.fill") // Different icon
                             .font(.title2)
@@ -215,8 +193,6 @@ struct HomeView: View {
                     .background(.regularMaterial) // Subtle background like control center
                     .cornerRadius(10)
                 }
-                .buttonStyle(.plain) // Treat label as button face
-                // --- End Reverted Link ---
                 
               } // End HStack
               
@@ -258,11 +234,20 @@ struct HomeView: View {
       .navigationBarHidden(true) // Example: Hide the navigation bar
       .sheet(isPresented: $showingSOSSheet) {
         // Pass the bindings to SOSView
-        SOSView(navigationTarget: $navigationTarget, showingBreatheView: $showingBreatheView)
+        SOSView(showingBreatheView: $showingBreatheView, showingHotChocolateGuideView: $showingHotChocolateGuideView)
       }
-      // Add another sheet modifier for the BreatheView
+      // Add sheet modifiers for each view
       .sheet(isPresented: $showingBreatheView) {
           BreatheView()
+      }
+      .sheet(isPresented: $showingMeditateView) {
+          MeditateView()
+      }
+      .sheet(isPresented: $showingHotChocolateGuideView) {
+          HotChocolateGuideView()
+      }
+      .sheet(isPresented: $showingHotChocolateAudioView) {
+          HotChocolateGuideAudioView()
       }
       .onAppear {
         // Select a random quote when the view appears
@@ -271,21 +256,6 @@ struct HomeView: View {
     } // End NavigationView
     // Apply styling appropriate for a NavigationView if you decide to show the bar
     // .navigationViewStyle(.stack) // Recommended for iOS 16+ if needed
-  }
-  
-  // ---- HELPER FUNCTION for Destination ----
-  @ViewBuilder // Allows returning different view types
-  private func destinationView(for target: NavigationTarget?) -> some View {
-    switch target {
-    case .hotChocolate:
-      HotChocolateGuideView()
-    case .none:
-      // Provide a default empty view or handle as needed when no target is set
-      EmptyView()
-      // Add cases for other NavigationTargets if you define them
-      // case .quickMeditation:
-      //     QuickMeditationView()
-    }
   }
 }
 
@@ -326,13 +296,5 @@ struct QuickActionButton: View {
       .tabItem {
         Label("Tools", systemImage: "wand.and.stars")
       }
-  }
-}
-
-// Preview Provider
-#Preview {
-  // Wrap in NavigationView to see the title bar correctly during preview
-  NavigationView {
-    HotChocolateGuideView()
   }
 }
