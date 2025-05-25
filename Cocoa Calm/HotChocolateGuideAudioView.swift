@@ -185,9 +185,12 @@ struct HotChocolateGuideAudioView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
+                    Button {
                         stopAndCleanup() // Stop audio if playing
                         dismiss() // Dismiss the modal
+                    } label: {
+                        Image(systemName: "xmark")
+                            .foregroundColor(.white)
                     }
                 }
             }
@@ -243,8 +246,11 @@ struct HotChocolateGuideAudioView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
+                    Button {
                         dismiss() // Dismiss the modal
+                    } label: {
+                        Image(systemName: "xmark")
+                            .foregroundColor(.primary)
                     }
                 }
             }

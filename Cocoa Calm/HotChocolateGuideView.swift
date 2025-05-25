@@ -109,8 +109,11 @@ struct HotChocolateGuideView: View {
         .navigationBarTitleDisplayMode(.inline) // Keeps title neat
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
-                Button("Done") {
+                Button {
                     dismiss() // Dismiss the modal
+                } label: {
+                    Image(systemName: "xmark")
+                        .foregroundColor(.primary)
                 }
             }
         }

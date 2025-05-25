@@ -117,9 +117,12 @@ struct MeditateView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
+                    Button {
                         stopMeditation() // Stop meditation if running
                         dismiss() // Dismiss the modal
+                    } label: {
+                        Image(systemName: "xmark")
+                            .foregroundColor(.primary)
                     }
                 }
             }

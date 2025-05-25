@@ -83,12 +83,14 @@ struct BreatheView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
-                        stopSounds() // Stop sounds if Done is tapped
-                        isAnimating = false // Stop animation if Done is tapped
+                    Button {
+                        stopSounds() // Stop sounds if × is tapped
+                        isAnimating = false // Stop animation if × is tapped
                         dismiss() // Dismiss the sheet
+                    } label: {
+                        Image(systemName: "xmark")
+                            .foregroundColor(.primary)
                     }
-                    .tint(.primary) // Reverted
                 }
             }
             .onAppear {
