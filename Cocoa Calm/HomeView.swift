@@ -9,7 +9,7 @@ import SwiftUI
 
 struct HomeView: View {
     @EnvironmentObject var subscriptionManager: SubscriptionManager
-    
+    @StateObject private var contentManager = ContentManager()
     // State to control the presentation of modal sheets
     @State private var showingSOSSheet = false
     @State private var showingBreatheView = false
@@ -17,6 +17,8 @@ struct HomeView: View {
     @State private var showingHotChocolateGuideView = false
     @State private var showingHotChocolateAudioView = false
     @State private var showingMeditationLibrary = false
+    @State private var showingProgressView = false
+    @State private var showingEnhancedTimer = false
     @State private var dailyQuote = "Take a deep breath, you've got this."
     
     // Example quotes - you could load these from elsewhere
@@ -183,11 +185,59 @@ struct HomeView: View {
                                     .cornerRadius(10)
                                 }
                                 
-                                QuickActionButton(title: "Log Entry", icon: "pencil.and.list.clipboard") {
-                                    print("Navigate to Log Entry")
+                                Button {
+                                    if subscriptionManager.canAccessPremiumContent() {
+                                        showingProgressView = true
+                                    } else {
+                                        showingMeditationLibrary = true
+                                    }
+                                } label: {
+                                    VStack {
+                                        Image(systemName: "chart.line.uptrend.xyaxis")
+                                            .font(.title2)
+                                            .foregroundColor(.primary.opacity(0.8))
+                                        Text("Progress")
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                        
+                                        if !subscriptionManager.canAccessPremiumContent() {
+                                            Image(systemName: "lock.fill")
+                                                .font(.caption2)
+                                                .foregroundColor(.orange)
+                                        }
+                                    }
+                                    .padding()
+                                    .frame(maxWidth: .infinity)
+                                    .background(.regularMaterial)
+                                    .cornerRadius(10)
                                 }
                                 
-                                Spacer()
+                                Button {
+                                    if subscriptionManager.canAccessPremiumContent() {
+                                        showingEnhancedTimer = true
+                                    } else {
+                                        showingMeditationLibrary = true
+                                    }
+                                } label: {
+                                    VStack {
+                                        Image(systemName: "timer.circle.fill")
+                                            .font(.title2)
+                                            .foregroundColor(.primary.opacity(0.8))
+                                        Text("Timer+")
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                        
+                                        if !subscriptionManager.canAccessPremiumContent() {
+                                            Image(systemName: "lock.fill")
+                                                .font(.caption2)
+                                                .foregroundColor(.orange)
+                                        }
+                                    }
+                                    .padding()
+                                    .frame(maxWidth: .infinity)
+                                    .background(.regularMaterial)
+                                    .cornerRadius(10)
+                                }
                             }
                         }
                         
@@ -233,6 +283,14 @@ struct HomeView: View {
             }
             .sheet(isPresented: $showingMeditationLibrary) {
                 MeditationLibraryView()
+            }
+            .sheet(isPresented: $showingProgressView) {
+                UserProgressView()
+                    .environmentObject(subscriptionManager)
+            }
+            .sheet(isPresented: $showingEnhancedTimer) {
+                EnhancedMeditationTimer()
+                    .environmentObject(subscriptionManager)
             }
             .onAppear {
                 dailyQuote = quotes.randomElement() ?? "Take a gentle moment for yourself."

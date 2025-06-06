@@ -39,7 +39,7 @@ class ContentItem: ObservableObject, Identifiable {
         }
     }
     
-    enum ContentCategory: String, CaseIterable {
+    enum ContentCategory: String, CaseIterable, Identifiable, Codable {
         case meditation = "meditation"
         case breathing = "breathing"
         case rituals = "rituals"
@@ -48,6 +48,8 @@ class ContentItem: ObservableObject, Identifiable {
         case sleep = "sleep"
         case focus = "focus"
         case crisis = "crisis"
+        
+        var id: String { self.rawValue }
         
         var displayName: String {
             switch self {

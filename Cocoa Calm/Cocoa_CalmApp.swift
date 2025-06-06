@@ -8,6 +8,7 @@
 import SwiftUI
 import SwiftData
 
+@main
 struct Cocoa_CalmApp: App {
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding: Bool = false
     @StateObject private var subscriptionManager = SubscriptionManager()
@@ -26,7 +27,7 @@ struct Cocoa_CalmApp: App {
     }()
 
     var body: some Scene {
-        WindowGroup {
+        WindowGroup(makeContent: {
             if hasCompletedOnboarding {
                 HomeView()
                     .environmentObject(subscriptionManager)
@@ -34,14 +35,7 @@ struct Cocoa_CalmApp: App {
                 OnboardingView(hasCompletedOnboarding: $hasCompletedOnboarding)
                     .environmentObject(subscriptionManager)
             }
-        }
+        })
         .modelContainer(sharedModelContainer)
-    }
-}
-
-@main
-struct CocoaCalmMain {
-    static func main() {
-        Cocoa_CalmApp.main()
     }
 }
